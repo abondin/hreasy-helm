@@ -1,0 +1,11 @@
+apiVersion: v1
+appVersion: "1.0"
+description: Helm chart for HR Easy Componentes
+name: hreasy-components
+version: 1.0.0
+type: application
+dependencies:
+- name: postgresql
+  version: 11.6.6
+  repository: https://charts.bitnami.com/bitnami
+  condition: postgresql.enabled
