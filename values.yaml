@@ -1,2 +1,19 @@
 postgresql:
     enabled: true
+    primary:
+        persistence:
+            enabled: true
+    auth:
+        username: hr
+        password: hr
+        database: hr
+
+platform:
+    enabled: true
+    hreasy:
+        db:
+            host: hreasy-stm-postgresql
+            username: hr
+            password: hr
+    
+    

@@ -9,3 +9,8 @@ dependencies:
   version: 11.6.6
   repository: https://charts.bitnami.com/bitnami
   condition: postgresql.enabled
+- name: platform
+  repository: file://./charts/platform
+  condition: platform.enabled
+  version: 0.1.0
+

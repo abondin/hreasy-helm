@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "platform.fullname" . }}
+  labels:
+    {{- include "platform.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "platform.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "platform.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "platform.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          env:
+            - name: SERVER_PORT
+              value: "80"
+
+            - name: HREASY_FS_RESOURCE_PATH
+              value: "file:/opt/hreasy/store"
+
+            - name: HREASY_DB_HOST
+              value: {{ .Values.hreasy.db.host}}
+
+            - name: HREASY_DB_PORT
+              value: "{{ .Values.hreasy.db.port}}"
+
+            - name: HREASY_DB_USERNAME
+              value: {{ .Values.hreasy.db.username}}
+
+            - name: HREASY_DB_PASSWORD
+              value: {{ .Values.hreasy.db.password}}
+
+            - name: HREASY_DB_DATABASE
+              value: {{ .Values.hreasy.db.database}}
+
+            - name: HREASY_WEB_SEC_MASTER-PASSWORD
+              value: {{ .Values.hreasy.web.sec.masterPassword}}
+
+            - name: HREASY_BACKGROUND_UPCOMING-VACATION_JOB-ENABLED
+              value: "{{ .Values.hreasy.background.upcomingVacation.jobEnabled}}"
+
+            - name: JAVA_TOOL_OPTIONS
+              value: "{{ .Values.javaOptions}}"
+              
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            failureThreshold: {{ .Values.health.failureThreshold}}
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
